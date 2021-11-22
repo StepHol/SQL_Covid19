@@ -1,4 +1,3 @@
-
 DROP TABLE IF EXISTS t_stepan_holub_tests;
 DROP TABLE IF EXISTS t_stepan_holub_covid;
 DROP TABLE IF EXISTS t_stepan_holub_gini;
@@ -9,7 +8,10 @@ DROP TABLE IF EXISTS t_stepan_holub_le_diff;
 DROP TABLE IF EXISTS t_stepan_holub_weather;
 DROP TABLE IF EXISTS t_stepan_holub_projekt_SQL_final;
 
---  Table t_stepan_holub_tests
+
+-- TABLE t_stepan_holub_tests
+-- Contains date, country and number of tests performed.
+-- Country names are converted to names from table covid19_basic_differences 
 CREATE TABLE IF NOT EXISTS t_stepan_holub_tests AS
 SELECT
 	ctp.`date`,
@@ -30,13 +32,16 @@ SELECT
 	tests_performed 
 FROM Covid19_tests_performed ctp;
 
+
+-- TABLE t_stepan_holub_covid
+-- date, country, positivity_rate, positive_per_mil
+-- name of country 'Czechia' changed to 'Czech Republic'
 CREATE TABLE IF NOT EXISTS t_stepan_holub_covid AS 
 SELECT 
 	cbd.`date`,
 	CASE WHEN cbd.country = 'Czechia' THEN 'Czech Republic' ELSE cbd.country END AS country,
 	ROUND(cbd.confirmed / t.tests_performed, 2) AS positivity_rate,
 	ROUND(cbd.confirmed / lt.population * 1000000, 2) AS positive_per_mil
--- 	ROUND(t.tests_performed / lt.population * 1000000, 2) AS tests_per_mil
 FROM covid19_basic_differences cbd 
 INNER JOIN t_stepan_holub_tests t
 	ON cbd.`date` = t.`date` 
@@ -50,7 +55,9 @@ WHERE 1=1
 ORDER BY `date`, country;
 
 
-
+-- TABLE t_stepan_holub_economies
+-- country, year, GDP, population, gini, mortality_under5
+-- Country names are converted to names from table covid19_basic_differences.
 CREATE TABLE IF NOT EXISTS t_stepan_holub_economies AS
 SELECT 
 	CASE WHEN country = 'Myanmar' THEN 'Burma'
@@ -71,6 +78,10 @@ SELECT
 	mortaliy_under5 
 FROM economies e;
 
+
+-- TABLE t_stepan_holub_gini
+-- country, gini
+-- Returns the most recent value of gini indicator.
 CREATE TABLE IF NOT EXISTS t_stepan_holub_gini as
 WITH base AS(
 SELECT 
@@ -87,14 +98,19 @@ SELECT
 FROM base
 WHERE `year` = last_gini_year;
 
+
+-- TABLE t_stepan_holub_economies_2019
+-- Returns values from year 2019 from table t_stepan_holub_economies.
 CREATE TABLE  IF NOT EXISTS t_stepan_holub_economies_2019 AS
 SELECT country, GDP, population, mortaliy_under5 
 FROM t_stepan_holub_economies
 WHERE `year` = '2019'
 
 
-
-
+-- TABLE t_stepan_holub_religions
+-- islam_pct, unaffiliated_religions_pct, hinduism_pct, buddhism_pct, folk_religions_pct, other_religions_pct, judaism_pct
+-- Table contains percentage of each religion. Population sum is calculated as a sum of all religion groups.
+-- Country names are converted to names from table covid19_basic_differences.
 CREATE TABLE IF NOT EXISTS t_stepan_holub_religions
 WITH base AS (
 SELECT
@@ -158,6 +174,10 @@ AND r7.religion  = 'Folk Religions'
 AND r8.religion  = 'Other Religions'
 AND r9.religion  = 'Judaism';
 
+
+-- TABLE t_stepan_holub_le_diff
+-- country, le_diff_1965_2015
+-- Returns the difference of life expectancy between years 1965 and 2015.
 CREATE TABLE IF NOT EXISTS t_stepan_holub_le_diff AS 
 SELECT 	
 	CASE WHEN le.country = 'Myanmar' THEN 'Burma'
@@ -178,6 +198,12 @@ JOIN life_expectancy le2
 WHERE le.`year` = 1965
 AND le2.`year` = 2015;
 
+
+-- TABLE t_stepan_holub_weather
+-- country, date, day_temp_cls, rainy_hours, gust_km_h
+-- Day temperature is an average temperature from hours: '06:00', '09:00', '12:00', '15:00', '18:00' .
+-- Rainy hours are hours when rain is greater than 0.3 mm/h.
+-- Gusts are maximum speed of gusts during the day.
 CREATE TABLE IF NOT EXISTS t_stepan_holub_weather AS
 WITH rain_gust AS 
 (
@@ -230,15 +256,38 @@ JOIN avg_day_temperature adt
 LEFT JOIN countries c
 	ON rg.city = c.capital_city 
 	
+SELECT * FROM t_stepan_holub_weather
 
 
+-- TABLE t_stepan_holub_projekt_SQL_final
+-- 
+-- COVID VARIABLES:
+-- positivity_rate, positive_per_mil,
+-- 
+-- DATE VARIABLES:
+-- weekend, season,
+-- 
+-- COUNTRY VARIABLES:
+-- population_density, GDP_per_capita, gini, mortaliy_under5, median_age_2018,
+-- christianity_pct, islam_pct, unaffiliated_religions_pct, hinduism_pct, buddhism_pct, folk_religions_pct, other_religions_pct, judaism_pct,
+-- le_diff_1965_2015,
+-- 
+-- WEATHER WARIABLES:
+-- day_temp_cls, rainy_hours, gust_km_h
+-- 
+-- 
+-- Weekend is represented by bool: 0 is weekday, 1 is weekend.
+-- Season is represented by number 0 is spring, 3 is winter.
+-- 
+-- This final table may take longer to create (3 minutes).
+-- 
 CREATE TABLE IF NOT EXISTS t_stepan_holub_projekt_SQL_final AS
 SELECT 
 	cov.`date`,
 	cov.country,
 	cov.positivity_rate,
 	cov.positive_per_mil,
-		-- 	weekend
+	-- 	weekend
 	CASE WHEN WEEKDAY(cov.`date`) IN (5,6) THEN 1 ELSE 0 END AS weekend,
 	-- 	season
 	CASE WHEN DAYOFYEAR(cov.`date`) BETWEEN 81 AND 172 THEN 0
@@ -276,56 +325,3 @@ ORDER BY cov.`date`, cov.country
 
 SELECT * FROM t_stepan_holub_projekt_SQL_final
 
-
-SELECT * FROM countries
-
-
-
-
-SELECT DISTINCT country FROM v_stepan_holub_rain_gust
-EXCEPT
-SELECT DISTINCT country FROM covid19_basic_differences cbd 
-
-
-(SELECT DISTINCT country FROM covid19_basic_differences cbd 
-EXCEPT
-SELECT DISTINCT country FROM v_stepan_holub_rain_gust)
-
-
-
-
-
-
-SELECT DISTINCT country FROM life_expectancy le 
-EXCEPT
-SELECT DISTINCT country FROM covid19_basic_differences cbd 
-
-
-(SELECT DISTINCT country FROM covid19_basic_differences cbd 
-EXCEPT
-SELECT DISTINCT country FROM life_expectancy le)
-
-
-(SELECT DISTINCT country FROM Covid19_tests_performed
-EXCEPT
-SELECT DISTINCT country FROM covid19_basic_differences cbd )
-
-
-
-SELECT
-min(date),
-max(date)
-FROM Covid19_tests_performed ctp 
-
-SELECT
-min(date),
-max(date)
-FROM covid19_basic_differences
-2020-01-22	2021-05-23
-
-
-SELECT
-min(date),
-max(date)
-FROM Covid19_tests_performed ctp
-2020-01-22	2021-05-23
