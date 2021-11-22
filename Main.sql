@@ -10,7 +10,7 @@ DROP TABLE IF EXISTS t_stepan_holub_projekt_SQL_final;
 
 
 -- TABLE t_stepan_holub_tests
--- Contains date, country and number of tests performed.
+-- Columns: date, country and number of tests performed.
 -- Country names are converted to names from table covid19_basic_differences 
 CREATE TABLE IF NOT EXISTS t_stepan_holub_tests AS
 SELECT
@@ -34,7 +34,7 @@ FROM Covid19_tests_performed ctp;
 
 
 -- TABLE t_stepan_holub_covid
--- date, country, positivity_rate, positive_per_mil
+-- Columns: date, country, positivity_rate, positive_per_mil
 -- name of country 'Czechia' changed to 'Czech Republic'
 CREATE TABLE IF NOT EXISTS t_stepan_holub_covid AS 
 SELECT 
@@ -56,7 +56,7 @@ ORDER BY `date`, country;
 
 
 -- TABLE t_stepan_holub_economies
--- country, year, GDP, population, gini, mortality_under5
+-- Columns: country, year, GDP, population, gini, mortality_under5
 -- Country names are converted to names from table covid19_basic_differences.
 CREATE TABLE IF NOT EXISTS t_stepan_holub_economies AS
 SELECT 
@@ -80,7 +80,7 @@ FROM economies e;
 
 
 -- TABLE t_stepan_holub_gini
--- country, gini
+-- Columns: country, gini
 -- Returns the most recent value of gini indicator.
 CREATE TABLE IF NOT EXISTS t_stepan_holub_gini as
 WITH base AS(
@@ -100,6 +100,7 @@ WHERE `year` = last_gini_year;
 
 
 -- TABLE t_stepan_holub_economies_2019
+-- Columns: country, GDP, population, mortaliy_under5
 -- Returns values from year 2019 from table t_stepan_holub_economies.
 CREATE TABLE  IF NOT EXISTS t_stepan_holub_economies_2019 AS
 SELECT country, GDP, population, mortaliy_under5 
@@ -108,7 +109,7 @@ WHERE `year` = '2019'
 
 
 -- TABLE t_stepan_holub_religions
--- islam_pct, unaffiliated_religions_pct, hinduism_pct, buddhism_pct, folk_religions_pct, other_religions_pct, judaism_pct
+-- Columns: islam_pct, unaffiliated_religions_pct, hinduism_pct, buddhism_pct, folk_religions_pct, other_religions_pct, judaism_pct
 -- Table contains percentage of each religion. Population sum is calculated as a sum of all religion groups.
 -- Country names are converted to names from table covid19_basic_differences.
 CREATE TABLE IF NOT EXISTS t_stepan_holub_religions
@@ -176,7 +177,7 @@ AND r9.religion  = 'Judaism';
 
 
 -- TABLE t_stepan_holub_le_diff
--- country, le_diff_1965_2015
+-- Columns: country, le_diff_1965_2015
 -- Returns the difference of life expectancy between years 1965 and 2015.
 CREATE TABLE IF NOT EXISTS t_stepan_holub_le_diff AS 
 SELECT 	
@@ -200,7 +201,7 @@ AND le2.`year` = 2015;
 
 
 -- TABLE t_stepan_holub_weather
--- country, date, day_temp_cls, rainy_hours, gust_km_h
+-- Columns: country, date, day_temp_cls, rainy_hours, gust_km_h
 -- Day temperature is an average temperature from hours: '06:00', '09:00', '12:00', '15:00', '18:00' .
 -- Rainy hours are hours when rain is greater than 0.3 mm/h.
 -- Gusts are maximum speed of gusts during the day.
